@@ -1,4 +1,4 @@
-package discomfortdeliverer.translation_app;
+package discomfortdeliverer.translation_app.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

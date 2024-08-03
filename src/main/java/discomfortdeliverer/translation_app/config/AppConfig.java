@@ -1,4 +1,4 @@
-package discomfortdeliverer.translation_app;
+package discomfortdeliverer.translation_app.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

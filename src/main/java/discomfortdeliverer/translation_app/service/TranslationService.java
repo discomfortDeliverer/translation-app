@@ -1,7 +1,7 @@
 package discomfortdeliverer.translation_app.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import discomfortdeliverer.translation_app.Translation;
+import discomfortdeliverer.translation_app.model.Translation;
 import discomfortdeliverer.translation_app.exceptions.LanguageNotFoundException;
 import discomfortdeliverer.translation_app.dto.TranslationRequestDto;
 import discomfortdeliverer.translation_app.dto.TranslationResultDto;
@@ -19,13 +19,14 @@ public class TranslationService {
 
     @Autowired
     private TranslationRepository translationRepository;
-    public TranslationResultDto translate(TranslationRequestDto translationRequestDto) {
+    public String translate(TranslationRequestDto translationRequestDto) {
         setLanguageCodesToLowerCase(translationRequestDto);
 
         try {
             TranslationResultDto translationResultDto = translationApiService.translate(translationRequestDto);
 
-            return translationRepository.saveTranslation(translationResultDto);
+            Translation translation = convertDtoToModel(translationResultDto);
+            return translationRepository.saveTranslation(translation);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
@@ -36,6 +37,11 @@ public class TranslationService {
             System.out.println("Язык не найден");
             return null;
         }
+    }
+
+    private Translation convertDtoToModel(TranslationResultDto translationResultDto) {
+        return new Translation(translationResultDto.getIpAddress(),
+                translationResultDto.getTextToTranslate(), translationResultDto.getTranslatedText());
     }
 
     private void setLanguageCodesToLowerCase(TranslationRequestDto translationRequestDto) {

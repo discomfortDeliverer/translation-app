@@ -1,13 +1,11 @@
 package discomfortdeliverer.translation_app.repository;
 
-import discomfortdeliverer.translation_app.Translation;
+import discomfortdeliverer.translation_app.model.Translation;
 import discomfortdeliverer.translation_app.dto.TranslationResultDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public class TranslationRepository {
@@ -17,11 +15,11 @@ public class TranslationRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public TranslationResultDto saveTranslation(TranslationResultDto translationResultDto) {
+    public String saveTranslation(Translation translation) {
         String sql = "INSERT INTO translations (ip_address, source_text, translated_text) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, translationResultDto.getIpAddress(), translationResultDto.getTextToTranslate(),
-                translationResultDto.getTranslatedText());
-        return translationResultDto;
+        jdbcTemplate.update(sql, translation.getIpAddress(), translation.getSourceText(),
+                translation.getTranslatedText());
+        return translation.getTranslatedText();
     }
 
     public List<Translation> findAllTranslation() {

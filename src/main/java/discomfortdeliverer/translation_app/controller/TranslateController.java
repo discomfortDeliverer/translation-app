@@ -1,7 +1,8 @@
-package discomfortdeliverer.translation_app;
+package discomfortdeliverer.translation_app.controller;
 
 import discomfortdeliverer.translation_app.dto.TranslationRequestDto;
 import discomfortdeliverer.translation_app.dto.TranslationResultDto;
+import discomfortdeliverer.translation_app.model.Translation;
 import discomfortdeliverer.translation_app.service.TranslationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +36,7 @@ public class TranslateController {
         translationRequestDto.setTextToTranslate(text);
         translationRequestDto.setIpAddress(ipAddress);
 
-        TranslationResultDto translationResultDto = translationService.translate(translationRequestDto);
-        return translationResultDto.getTranslatedText();
+        return translationService.translate(translationRequestDto);
     }
 
     @GetMapping("/translations")
