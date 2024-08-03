@@ -8,6 +8,8 @@ import discomfortdeliverer.translation_app.exceptions.LanguageNotFoundException;
 import discomfortdeliverer.translation_app.dto.TranslationRequestDto;
 import discomfortdeliverer.translation_app.dto.TranslationResultDto;
 import discomfortdeliverer.translation_app.repository.TranslationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class TranslationService {
+    private static final Logger log = LoggerFactory.getLogger(TranslationService.class);
     @Autowired
     private TranslationApiService translationApiService;
 
@@ -23,6 +26,7 @@ public class TranslationService {
     private TranslationRepository translationRepository;
     public String translate(TranslationRequestDto translationRequestDto)
             throws LanguageNotFoundException, TranslationResourceAccessException, InternalServiceException {
+
         toLowerCaseAndTrim(translationRequestDto);
 
         try {
@@ -30,7 +34,8 @@ public class TranslationService {
 
             Translation translation = convertDtoToModel(translationResultDto);
             return translationRepository.saveTranslation(translation);
-        } catch (InterruptedException | ExecutionException | JsonProcessingException e) {
+        } catch (InterruptedException | JsonProcessingException | ExecutionException e) {
+            log.warn("Исключение поймано в методе translate", e);
             throw new InternalServiceException(e);
         }
     }

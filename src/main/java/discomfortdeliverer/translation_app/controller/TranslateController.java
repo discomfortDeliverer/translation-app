@@ -9,6 +9,8 @@ import discomfortdeliverer.translation_app.exceptions.TranslationResourceAccessE
 import discomfortdeliverer.translation_app.model.Translation;
 import discomfortdeliverer.translation_app.service.TranslationService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,19 +19,28 @@ import java.util.List;
 
 @RestController
 public class TranslateController {
+    private static final Logger log = LoggerFactory.getLogger(TranslationService.class);
     private static final int MAX_LENGTH_LANGUAGE_CODE = 2;
     @Autowired
     private TranslationService translationService;
     @PostMapping("/translate")
-    public String translate(@RequestBody String text,
-                            @RequestParam String sourceLanguage,
-                            @RequestParam String targetLanguage,
-                            HttpServletRequest req) throws LanguageNotFoundException,
-            TranslationResourceAccessException, InternalServiceException, InvalidEnteredDataException {
+    public String translate(
+            @RequestBody String text,
+            @RequestParam String sourceLanguage,
+            @RequestParam String targetLanguage,
+            HttpServletRequest req
+    ) throws LanguageNotFoundException, TranslationResourceAccessException, InternalServiceException,
+             InvalidEnteredDataException {
+
+        log.info("Получен POST запрос /translate, text={}, sourceLanguage={}, targetLanguage={}", text,
+                sourceLanguage, targetLanguage);
+
         if(!isValidLanguageName(sourceLanguage) || !isValidLanguageName(targetLanguage)) {
             throw new InvalidEnteredDataException("Некорректно указаны sourceLanguage и targetLanguage");
         }
-        if (text.trim().isEmpty()) throw new InvalidEnteredDataException("Пустой текст для перевода");
+        if (text.trim().isEmpty()) {
+            throw new InvalidEnteredDataException("Пустой текст для перевода");
+        }
 
         String ipAddress = req.getHeader("X-Forwarded-For");
         if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
