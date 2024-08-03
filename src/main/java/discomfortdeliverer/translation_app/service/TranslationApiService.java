@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import discomfortdeliverer.translation_app.LanguageNotFoundException;
-import discomfortdeliverer.translation_app.TranslationRequestDto;
-import discomfortdeliverer.translation_app.TranslationResourceAccessException;
+import discomfortdeliverer.translation_app.exceptions.LanguageNotFoundException;
+import discomfortdeliverer.translation_app.dto.TranslationRequestDto;
+import discomfortdeliverer.translation_app.dto.TranslationResultDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -30,14 +29,14 @@ public class TranslationApiService {
         this.restTemplate = restTemplate;
     }
 
-    public String translate(TranslationRequestDto translationRequestDto) throws InterruptedException,
+    public TranslationResultDto translate(TranslationRequestDto translationRequestDto) throws InterruptedException,
             ExecutionException, JsonProcessingException, LanguageNotFoundException {
         String textToTranslate = translationRequestDto.getTextToTranslate();
         String sourceLanguage = translationRequestDto.getSourceLanguage();
         String targetLanguage = translationRequestDto.getTargetLanguage();
 
         if(languageMap == null) {
-            getAllSupportedLanguages();
+            getSupportedLanguages();
         }
         if (!languageMap.containsKey(sourceLanguage) || !languageMap.containsKey(targetLanguage)){
             throw new LanguageNotFoundException();
@@ -53,21 +52,32 @@ public class TranslationApiService {
 
         List<Future<String>> futures = executorService.invokeAll(tasks);
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder translatedText = new StringBuilder();
         for (Future<String> future : futures) {
-            String translatedWordFromJson = getTranslatedWordFromJson(future.get());
-            sb.append(translatedWordFromJson);
-            sb.append(" ");
-            System.out.println(translatedWordFromJson);
+            String translatedWord = getTranslatedWordFromJson(future.get());
+            translatedText.append(translatedWord);
+            translatedText.append(" ");
+            System.out.println(translatedWord);
         }
 
         executorService.shutdown();
+        TranslationResultDto translationResultDto = convertDto(translationRequestDto);
 
-        return sb.toString().trim();
+        translationResultDto.setTranslatedText(translatedText.toString().trim());
+        return translationResultDto;
     }
 
-    private String translateWord(RestTemplate restTemplate, String word, String sl, String tl)
-            throws TranslationResourceAccessException {
+    private TranslationResultDto convertDto(TranslationRequestDto translationRequestDto) {
+        TranslationResultDto translationResultDto = new TranslationResultDto();
+        translationResultDto.setSourceLanguage(translationRequestDto.getSourceLanguage());
+        translationResultDto.setTargetLanguage(translationRequestDto.getTargetLanguage());
+        translationResultDto.setTextToTranslate(translationRequestDto.getTextToTranslate());
+        translationResultDto.setIpAddress(translationRequestDto.getIpAddress());
+
+        return translationResultDto;
+    }
+
+    private String translateWord(RestTemplate restTemplate, String word, String sl, String tl) {
         StringBuilder urlBuilder = new StringBuilder(TRANSLATE_API_URL);
         urlBuilder.append("?sl=").append(sl)
                 .append("&dl=").append(tl)
@@ -85,14 +95,14 @@ public class TranslationApiService {
         return jsonNode.get("destination-text").asText();
     }
 
-    private void getAllSupportedLanguages() {
+    private void getSupportedLanguages() {
         String url = "https://ftapi.pythonanywhere.com/languages";
-        String allSupportedLanguageJson = restTemplate.getForObject(url, String.class);
+        String supportedLanguageJson = restTemplate.getForObject(url, String.class);
 
         ObjectMapper mapper = new ObjectMapper();
 
         try {
-            languageMap = mapper.readValue(allSupportedLanguageJson,
+            languageMap = mapper.readValue(supportedLanguageJson,
                     new TypeReference<Map<String, String>>() {});
 
             System.out.println(languageMap);

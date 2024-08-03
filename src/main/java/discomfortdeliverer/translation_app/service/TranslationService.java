@@ -1,22 +1,31 @@
 package discomfortdeliverer.translation_app.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import discomfortdeliverer.translation_app.LanguageNotFoundException;
-import discomfortdeliverer.translation_app.TranslationRequestDto;
+import discomfortdeliverer.translation_app.Translation;
+import discomfortdeliverer.translation_app.exceptions.LanguageNotFoundException;
+import discomfortdeliverer.translation_app.dto.TranslationRequestDto;
+import discomfortdeliverer.translation_app.dto.TranslationResultDto;
+import discomfortdeliverer.translation_app.repository.TranslationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Service
 public class TranslationService {
     @Autowired
     private TranslationApiService translationApiService;
-    public String translate(TranslationRequestDto translationRequestDto) {
+
+    @Autowired
+    private TranslationRepository translationRepository;
+    public TranslationResultDto translate(TranslationRequestDto translationRequestDto) {
         setLanguageCodesToLowerCase(translationRequestDto);
 
         try {
-            return translationApiService.translate(translationRequestDto);
+            TranslationResultDto translationResultDto = translationApiService.translate(translationRequestDto);
+
+            return translationRepository.saveTranslation(translationResultDto);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
@@ -25,7 +34,7 @@ public class TranslationService {
             throw new RuntimeException(e);
         } catch (LanguageNotFoundException e) {
             System.out.println("Язык не найден");
-            return "Язык не найден";
+            return null;
         }
     }
 
@@ -34,4 +43,7 @@ public class TranslationService {
         translationRequestDto.setTargetLanguage(translationRequestDto.getTargetLanguage().toLowerCase());
     }
 
+    public List<Translation> getAllTranslations() {
+        return translationRepository.findAllTranslation();
+    }
 }
