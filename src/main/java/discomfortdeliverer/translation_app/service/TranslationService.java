@@ -1,6 +1,8 @@
 package discomfortdeliverer.translation_app.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import discomfortdeliverer.translation_app.exceptions.InternalServiceException;
+import discomfortdeliverer.translation_app.exceptions.TranslationResourceAccessException;
 import discomfortdeliverer.translation_app.model.Translation;
 import discomfortdeliverer.translation_app.exceptions.LanguageNotFoundException;
 import discomfortdeliverer.translation_app.dto.TranslationRequestDto;
@@ -19,23 +21,17 @@ public class TranslationService {
 
     @Autowired
     private TranslationRepository translationRepository;
-    public String translate(TranslationRequestDto translationRequestDto) {
-        setLanguageCodesToLowerCase(translationRequestDto);
+    public String translate(TranslationRequestDto translationRequestDto)
+            throws LanguageNotFoundException, TranslationResourceAccessException, InternalServiceException {
+        toLowerCaseAndTrim(translationRequestDto);
 
         try {
             TranslationResultDto translationResultDto = translationApiService.translate(translationRequestDto);
 
             Translation translation = convertDtoToModel(translationResultDto);
             return translationRepository.saveTranslation(translation);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        } catch (LanguageNotFoundException e) {
-            System.out.println("Язык не найден");
-            return null;
+        } catch (InterruptedException | ExecutionException | JsonProcessingException e) {
+            throw new InternalServiceException(e);
         }
     }
 
@@ -44,9 +40,10 @@ public class TranslationService {
                 translationResultDto.getTextToTranslate(), translationResultDto.getTranslatedText());
     }
 
-    private void setLanguageCodesToLowerCase(TranslationRequestDto translationRequestDto) {
+    private void toLowerCaseAndTrim(TranslationRequestDto translationRequestDto) {
         translationRequestDto.setSourceLanguage(translationRequestDto.getSourceLanguage().toLowerCase());
         translationRequestDto.setTargetLanguage(translationRequestDto.getTargetLanguage().toLowerCase());
+        translationRequestDto.setTextToTranslate(translationRequestDto.getTextToTranslate().trim());
     }
 
     public List<Translation> getAllTranslations() {

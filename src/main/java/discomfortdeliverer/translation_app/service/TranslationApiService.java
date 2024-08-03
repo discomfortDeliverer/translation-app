@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import discomfortdeliverer.translation_app.exceptions.LanguageNotFoundException;
 import discomfortdeliverer.translation_app.dto.TranslationRequestDto;
 import discomfortdeliverer.translation_app.dto.TranslationResultDto;
+import discomfortdeliverer.translation_app.exceptions.TranslationResourceAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -30,7 +31,7 @@ public class TranslationApiService {
     }
 
     public TranslationResultDto translate(TranslationRequestDto translationRequestDto) throws InterruptedException,
-            ExecutionException, JsonProcessingException, LanguageNotFoundException {
+            ExecutionException, JsonProcessingException, LanguageNotFoundException, TranslationResourceAccessException {
         String textToTranslate = translationRequestDto.getTextToTranslate();
         String sourceLanguage = translationRequestDto.getSourceLanguage();
         String targetLanguage = translationRequestDto.getTargetLanguage();
@@ -42,7 +43,7 @@ public class TranslationApiService {
             throw new LanguageNotFoundException();
         }
 
-        List<String> words = Arrays.asList(textToTranslate.split(" "));
+        List<String> words = Arrays.asList(textToTranslate.split("\\s+"));
 
         ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
 
@@ -95,7 +96,7 @@ public class TranslationApiService {
         return jsonNode.get("destination-text").asText();
     }
 
-    private void getSupportedLanguages() {
+    private void getSupportedLanguages() throws TranslationResourceAccessException {
         String url = "https://ftapi.pythonanywhere.com/languages";
         String supportedLanguageJson = restTemplate.getForObject(url, String.class);
 
@@ -107,7 +108,7 @@ public class TranslationApiService {
 
             System.out.println(languageMap);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new TranslationResourceAccessException();
         }
     }
 }
