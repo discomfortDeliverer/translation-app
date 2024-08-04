@@ -36,7 +36,7 @@ public class TranslationService {
             return translationRepository.saveTranslation(translation);
         } catch (InterruptedException | JsonProcessingException | ExecutionException e) {
             log.warn("Исключение поймано в методе translate", e);
-            throw new InternalServiceException(e);
+            throw new InternalServiceException("Процесс перевода завершился неудачей", e);
         }
     }
 

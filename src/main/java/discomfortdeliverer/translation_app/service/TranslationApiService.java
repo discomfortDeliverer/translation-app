@@ -8,6 +8,8 @@ import discomfortdeliverer.translation_app.exceptions.LanguageNotFoundException;
 import discomfortdeliverer.translation_app.dto.TranslationRequestDto;
 import discomfortdeliverer.translation_app.dto.TranslationResultDto;
 import discomfortdeliverer.translation_app.exceptions.TranslationResourceAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -21,17 +23,21 @@ import java.util.concurrent.*;
 @Service
 public class TranslationApiService {
     private static final String TRANSLATE_API_URL = "https://ftapi.pythonanywhere.com/translate";
+    private static final String LANGUAGES_API_URL = "https://ftapi.pythonanywhere.com/languages";
     private static final int MAX_THREADS = 10;
     private final RestTemplate restTemplate;
     private Map<String, String> languageMap;
+    private static final Logger log = LoggerFactory.getLogger(TranslationService.class);
 
     @Autowired
     public TranslationApiService(RestTemplate restTemplate){
         this.restTemplate = restTemplate;
     }
 
-    public TranslationResultDto translate(TranslationRequestDto translationRequestDto) throws InterruptedException,
-            ExecutionException, JsonProcessingException, LanguageNotFoundException, TranslationResourceAccessException {
+    public TranslationResultDto translate(TranslationRequestDto translationRequestDto)
+            throws InterruptedException, ExecutionException, JsonProcessingException, LanguageNotFoundException,
+            TranslationResourceAccessException {
+
         String textToTranslate = translationRequestDto.getTextToTranslate();
         String sourceLanguage = translationRequestDto.getSourceLanguage();
         String targetLanguage = translationRequestDto.getTargetLanguage();
@@ -39,8 +45,12 @@ public class TranslationApiService {
         if(languageMap == null) {
             getSupportedLanguages();
         }
-        if (!languageMap.containsKey(sourceLanguage) || !languageMap.containsKey(targetLanguage)){
-            throw new LanguageNotFoundException();
+        if (!languageMap.containsKey(sourceLanguage)){
+            log.info("Указанный язык={} не поддерживается", sourceLanguage);
+            throw new LanguageNotFoundException("Не найден язык исходного сообщения " + sourceLanguage);
+        } else if (!languageMap.containsKey(targetLanguage)) {
+            log.info("Указанный язык={} не поддерживается", targetLanguage);
+            throw new LanguageNotFoundException("Не найден язык целевого сообщения " + targetLanguage);
         }
 
         List<String> words = Arrays.asList(textToTranslate.split("\\s+"));
@@ -65,6 +75,7 @@ public class TranslationApiService {
         TranslationResultDto translationResultDto = convertDto(translationRequestDto);
 
         translationResultDto.setTranslatedText(translatedText.toString().trim());
+        log.info("Результат перевода={}", translationResultDto.getTranslatedText());
         return translationResultDto;
     }
 
@@ -97,8 +108,7 @@ public class TranslationApiService {
     }
 
     private void getSupportedLanguages() throws TranslationResourceAccessException {
-        String url = "https://ftapi.pythonanywhere.com/languages";
-        String supportedLanguageJson = restTemplate.getForObject(url, String.class);
+        String supportedLanguageJson = restTemplate.getForObject(LANGUAGES_API_URL, String.class);
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -108,7 +118,7 @@ public class TranslationApiService {
 
             System.out.println(languageMap);
         } catch (IOException e) {
-            throw new TranslationResourceAccessException();
+            throw new TranslationResourceAccessException("Ошибка получения списка всех доступных языков", e);
         }
     }
 }

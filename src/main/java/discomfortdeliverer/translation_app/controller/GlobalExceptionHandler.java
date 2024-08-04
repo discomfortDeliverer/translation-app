@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(TranslationService.class);
     @ExceptionHandler(LanguageNotFoundException.class)
-    public ResponseEntity<String> handleLanguageNotFoundException() {
+    public ResponseEntity<String> handleLanguageNotFoundException(LanguageNotFoundException e) {
         log.warn("Произошло исключение LanguageNotFoundException");
-        return ResponseEntity.status(400).body("Не найден язык исходного сообщения");
+        return ResponseEntity.status(400).body(e.getMessage());
     }
 
     @ExceptionHandler(TranslationResourceAccessException.class)
