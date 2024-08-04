@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 public class TranslateController {
     private static final Logger log = LoggerFactory.getLogger(TranslationService.class);
-    private static final int MAX_LENGTH_LANGUAGE_CODE = 2;
+    private static final int MAX_LENGTH_LANGUAGE_CODE = 5;
     @Autowired
     private TranslationService translationService;
     @PostMapping("/translate")
