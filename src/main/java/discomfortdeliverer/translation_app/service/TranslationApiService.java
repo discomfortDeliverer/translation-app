@@ -130,4 +130,15 @@ public class TranslationApiService {
             throw new TranslationResourceAccessException("Ошибка получения списка всех доступных языков", e);
         }
     }
+
+    public Map<String, String> getLanguageMap() {
+        if (languageMap == null) {
+            try {
+                getSupportedLanguages();
+            } catch (TranslationResourceAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return languageMap;
+    }
 }
