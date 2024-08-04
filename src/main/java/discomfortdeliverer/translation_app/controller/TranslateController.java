@@ -1,7 +1,6 @@
 package discomfortdeliverer.translation_app.controller;
 
 import discomfortdeliverer.translation_app.dto.TranslationRequestDto;
-import discomfortdeliverer.translation_app.dto.TranslationResultDto;
 import discomfortdeliverer.translation_app.exceptions.InternalServiceException;
 import discomfortdeliverer.translation_app.exceptions.InvalidEnteredDataException;
 import discomfortdeliverer.translation_app.exceptions.LanguageNotFoundException;
@@ -12,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
