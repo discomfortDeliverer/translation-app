@@ -71,7 +71,6 @@ public class TranslationApiService {
             String translatedWord = getTranslatedWordFromJson(future.get());
             translatedText.append(translatedWord);
             translatedText.append(" ");
-            System.out.println(translatedWord);
         }
 
         executorService.shutdown();
@@ -101,8 +100,6 @@ public class TranslationApiService {
                 .append("&dl=").append(tl)
                 .append("&text=").append(word);
 
-        System.out.println(urlBuilder);
-
         return restTemplate.getForObject(urlBuilder.toString(), String.class);
     }
 
@@ -116,10 +113,7 @@ public class TranslationApiService {
     }
 
     private boolean isSymbol(String word) {
-        if(word.length() == 1 && !Character.isLetter(word.charAt(0))){
-            System.out.println(word + " - символ");
-            return true;
-        } else return false;
+        return word.length() == 1 && !Character.isLetter(word.charAt(0));
     }
 
     private void getSupportedLanguages() throws TranslationResourceAccessException {
@@ -130,8 +124,6 @@ public class TranslationApiService {
         try {
             languageMap = mapper.readValue(supportedLanguageJson,
                     new TypeReference<Map<String, String>>() {});
-
-            System.out.println(languageMap);
         } catch (IOException e) {
             throw new TranslationResourceAccessException("Ошибка получения списка всех доступных языков", e);
         }

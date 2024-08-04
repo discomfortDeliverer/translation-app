@@ -58,7 +58,7 @@ public class TranslateController {
 
     @GetMapping("/translations")
     public List<Translation> translations() {
-        log.info("Получен POST запрос /translations");
+        log.info("Получен GET запрос /translations");
         return translationService.getAllTranslations();
     }
     private boolean isValidLanguageName(String languageCode) {
