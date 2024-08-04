@@ -2,6 +2,7 @@ package discomfortdeliverer.translation_app.repository;
 
 import discomfortdeliverer.translation_app.model.Translation;
 import discomfortdeliverer.translation_app.dto.TranslationResultDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +12,7 @@ import java.util.List;
 public class TranslationRepository {
     private final JdbcTemplate jdbcTemplate;
 
+    @Autowired
     public TranslationRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }

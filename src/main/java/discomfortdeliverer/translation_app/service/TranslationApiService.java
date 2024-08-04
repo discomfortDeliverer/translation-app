@@ -93,8 +93,7 @@ public class TranslationApiService {
     }
 
     private String translateWord(RestTemplate restTemplate, String word, String sl, String tl) {
-        // Чтобы & не ломал параметр запроса к API
-        if(word.equals("&")) return word;
+        if(isSymbol(word)) return word;
 
         StringBuilder urlBuilder = new StringBuilder(TRANSLATE_API_URL);
 
@@ -108,12 +107,19 @@ public class TranslationApiService {
     }
 
     private String getTranslatedWordFromJson(String json) throws JsonProcessingException {
-        if(json.equals("&")) return json;
+        if(isSymbol(json)) return json;
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(json);
 
         return jsonNode.get("destination-text").asText();
+    }
+
+    private boolean isSymbol(String word) {
+        if(word.length() == 1 && !Character.isLetter(word.charAt(0))){
+            System.out.println(word + " - символ");
+            return true;
+        } else return false;
     }
 
     private void getSupportedLanguages() throws TranslationResourceAccessException {
