@@ -29,7 +29,7 @@ chmod +x mvnw
 4. После сборки в директории target создастся JAR-файл, запустите его:  
 ```bash
 cd target
-java -jar target/translation-app.0.0.1-SNAPSHOT.jar
+java -jar translation-app.0.0.1-SNAPSHOT.jar
 ```
 Приложение будет запущено на http://localhost:8080.  
 Или откройте приложение с помощью IDE и запустите.
