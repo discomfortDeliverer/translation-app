@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +93,11 @@ public class TranslationApiService {
     }
 
     private String translateWord(RestTemplate restTemplate, String word, String sl, String tl) {
+        // Чтобы & не ломал параметр запроса к API
+        if(word.equals("&")) return word;
+
         StringBuilder urlBuilder = new StringBuilder(TRANSLATE_API_URL);
+
         urlBuilder.append("?sl=").append(sl)
                 .append("&dl=").append(tl)
                 .append("&text=").append(word);
@@ -101,6 +108,8 @@ public class TranslationApiService {
     }
 
     private String getTranslatedWordFromJson(String json) throws JsonProcessingException {
+        if(json.equals("&")) return json;
+
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(json);
 
